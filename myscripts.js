@@ -103,10 +103,13 @@ window.addEventListener("click", (e) => {
 
 const getApp = document.getElementById("get-app");
 const appBanner = document.getElementById("app-banner");
+const mobileImageMargin = document.querySelector(".mobile-image");
 
 getApp.addEventListener("click", () => {
   appBanner.style.display = "none";
+  mobileImageMargin.style.marginTop = "60px";
 });
+
 
 // there datepicker part
 
