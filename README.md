@@ -33,4 +33,4 @@ The objective of this task was to create a responsive webpage using specified te
 
 This project demonstrates the implementation of a responsive webpage using HTML5, CSS3, and JavaScript. The UI is designed to be mobile-friendly, ensuring an optimal user experience on both mobile and desktop devices.
 
-You can view the project on GitHub at the following link: [GitHub Repository](<https://bishworup002.github.io/Asignment2/>)
+You can view the project on GitHub at the following link: [Live](<https://bishworup002.github.io/Asignment2/>)
