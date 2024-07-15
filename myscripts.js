@@ -1,15 +1,80 @@
 // save button click by toggle , color change and locally store
 
 const saveBtn = document.querySelector(".btn-save");
+const shareBtn = document.querySelector(".btn-share");
+const shareBtnMobile = document.querySelector(".btn-share-mobile");
+const saveBtnMobile = document.querySelector(".btn-save-mobile");
 // Load saved state
 if (localStorage.getItem("isSaved") === "true") {
   saveBtn.classList.add("active");
+  saveBtnMobile.classList.add("active");
 }
 
 saveBtn.addEventListener("click", () => {
   saveBtn.classList.toggle("active");
+  saveBtnMobile.classList.toggle("active");
   localStorage.setItem("isSaved", saveBtn.classList.contains("active"));
+  localStorage.setItem("isSaved", saveBtnMobile.classList.contains("active"));
 });
+
+saveBtnMobile.addEventListener("click", () => {
+  saveBtn.classList.toggle("active");
+  saveBtnMobile.classList.toggle("active");
+  localStorage.setItem("isSaved", saveBtn.classList.contains("active"));
+  localStorage.setItem("isSaved", saveBtnMobile.classList.contains("active"));
+});
+
+// share modal
+
+const shareModal = document.getElementById("shareModal");
+const closeBtn = document.querySelector(".close");
+const copyLinkBtn = document.getElementById("copyLink");
+
+shareBtn.addEventListener("click", () => {
+  shareModal.style.display = "block";
+});
+
+shareBtnMobile.addEventListener("click", () => {
+  shareModal.style.display = "block";
+});
+
+closeBtn.addEventListener("click", () => {
+  shareModal.style.display = "none";
+});
+
+window.addEventListener("click", (event) => {
+  if (event.target == shareModal) {
+    shareModal.style.display = "none";
+  }
+});
+
+
+
+const alertElement = document.getElementById("alert");
+
+
+copyLinkBtn.addEventListener("click", () => {
+  navigator.clipboard
+    .writeText(window.location.href)
+    .then(() => {
+      showAlert();
+    })
+    .catch((err) => console.error("Failed to copy: ", err));
+});
+
+function showAlert() {
+  alertElement.classList.add("show");
+  alertElement.classList.remove("hide");
+
+  setTimeout(function () {
+    alertElement.classList.add("hide");
+    setTimeout(function () {
+      alertElement.classList.remove("show");
+    }, 400); // Match the transition duration
+  }, 1000); // 1 second delay before starting to hide the alert
+}
+
+
 
 //any where modal
 
@@ -28,9 +93,8 @@ regionOptions.forEach((option) => {
   });
 });
 
-// Close modal when clicking outside
 window.addEventListener("click", (e) => {
-  if (e.target === regionModal) {
+  if (!regionModal.contains(e.target) && e.target !== whereButton) {
     regionModal.style.display = "none";
   }
 });
@@ -43,6 +107,177 @@ const appBanner = document.getElementById("app-banner");
 getApp.addEventListener("click", () => {
   appBanner.style.display = "none";
 });
+
+// there datepicker part
+
+let currentMonth = new Date().getMonth();
+let currentYear = new Date().getFullYear();
+let checkInDate = null;
+let checkOutDate = null;
+let dateRange = 0;
+let today = new Date();
+today.setHours(0, 0, 0, 0);
+
+function openModal() {
+  document.getElementById("dateModal").style.display = "block";
+  renderCalendars();
+}
+
+function renderCalendars() {
+  renderCalendar("calendar1", currentMonth, currentYear);
+  renderCalendar("calendar2", currentMonth + 1, currentYear);
+}
+
+function renderCalendar(calendarId, month, year) {
+  const calendar = document.getElementById(calendarId);
+  calendar.innerHTML = "";
+
+  const monthNames = [
+    "January",
+    "February",
+    "March",
+    "April",
+    "May",
+    "June",
+    "July",
+    "August",
+    "September",
+    "October",
+    "November",
+    "December",
+  ];
+
+  const monthHeader = document.createElement("div");
+  monthHeader.className = "month-header";
+  monthHeader.textContent = `${monthNames[month]} ${year}`;
+  calendar.appendChild(monthHeader);
+
+  const weekdays = document.createElement("div");
+  weekdays.className = "weekdays";
+  ["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"].forEach((day) => {
+    const dayElement = document.createElement("div");
+    dayElement.textContent = day;
+    weekdays.appendChild(dayElement);
+  });
+  calendar.appendChild(weekdays);
+
+  const days = document.createElement("div");
+  days.className = "days";
+
+  const firstDay = new Date(year, month, 1).getDay();
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
+
+  for (let i = 0; i < firstDay; i++) {
+    const emptyDay = document.createElement("div");
+    emptyDay.className = "empty";
+    days.appendChild(emptyDay);
+  }
+
+  for (let i = 1; i <= daysInMonth; i++) {
+    const dayElement = document.createElement("div");
+    dayElement.textContent = i;
+
+    const currentDate = new Date(year, month, i);
+    if (currentDate < today) {
+      dayElement.classList.add("disabled");
+    } else {
+      dayElement.onclick = () => selectDate(currentDate);
+
+      if (isDateInRange(currentDate)) {
+        dayElement.classList.add("in-range");
+      }
+      if (
+        isSameDate(currentDate, checkInDate) ||
+        isSameDate(currentDate, checkOutDate)
+      ) {
+        dayElement.classList.add("selected");
+      }
+    }
+
+    days.appendChild(dayElement);
+  }
+
+  calendar.appendChild(days);
+}
+
+function selectDate(date) {
+  if (!checkInDate || (checkInDate && checkOutDate)) {
+    checkInDate = date;
+    checkOutDate = null;
+  } else {
+    if (date > checkInDate) {
+      checkOutDate = date;
+    } else {
+      checkOutDate = checkInDate;
+      checkInDate = date;
+    }
+  }
+  renderCalendars();
+}
+
+function isDateInRange(date) {
+  if (checkInDate && checkOutDate) {
+    return date >= checkInDate && date <= checkOutDate;
+  }
+  return false;
+}
+
+function isSameDate(date1, date2) {
+  return (
+    date1 &&
+    date2 &&
+    date1.getFullYear() === date2.getFullYear() &&
+    date1.getMonth() === date2.getMonth() &&
+    date1.getDate() === date2.getDate()
+  );
+}
+
+function setExactDates() {
+  dateRange = 0;
+  updateNavbarButton();
+}
+
+function setDateRange(range) {
+  dateRange = range;
+  updateNavbarButton();
+}
+
+function updateNavbarButton() {
+  if (checkInDate && checkOutDate) {
+    const formatDate = (date) =>
+      `${date.getDate()} ${date.toLocaleString("default", { month: "short" })}`;
+    const checkIn = formatDate(checkInDate);
+    const checkOut = formatDate(checkOutDate);
+    let text =
+      dateRange > 0
+        ? `${checkIn} ±${dateRange} - ${checkOut} ±${dateRange}`
+        : `${checkIn} - ${checkOut}`;
+    document.querySelector("#any-week").textContent = text;
+    document.getElementById("dateModal").style.display = "none";
+  }
+}
+
+function changeMonth(delta) {
+  currentMonth += delta;
+  if (currentMonth > 11) {
+    currentMonth = 0;
+    currentYear++;
+  } else if (currentMonth < 0) {
+    currentMonth = 11;
+    currentYear--;
+  }
+  renderCalendars();
+}
+
+// // // Close modal when clicking outside
+// const dateModal = document.getElementById("dateModal");
+// const anyWeek = document.getElementById("any-week");
+
+// window.addEventListener("click", (e) => {
+//   if (!dateModal.contains(e.target) && e.target !== anyWeek) {
+//     dateModal.style.display = "none";
+//   }
+// });
 
 //   guest modal part
 
@@ -108,3 +343,72 @@ window.addEventListener("click", (e) => {
     guestModal.style.display = "none";
   }
 });
+
+// show all image modal /////////////////////////////////////////////////////////////////////////////////////////////
+
+// const images = ['image/hotel1.jpg', 'image/hotel2.jpg', 'image/hotel3.jpg', 'image/hotel4.jpg', 'image/hotel5.jpg'];
+const images = [
+  "image/hotel1.jpg",
+  "image/hotel2.jpg",
+  "image/hotel3.jpg",
+  "image/hotel4.jpg",
+  "image/hotel5.jpg",
+  "image/hotel6.jpg",
+  "image/hotel7.jpg",
+  "image/hotel8.jpg",
+  "image/hotel9.jpg",
+  "image/hotel10.jpg",
+  "image/hotel11.jpg",
+];
+
+let currentIndex = 0;
+const modalImage = document.getElementById("mymodalImage");
+const modalImageImg = document.getElementById("modalImageImage");
+const imageCount = document.getElementById("imageCount");
+
+function openmodalImage(index) {
+  modalImage.style.display = "block";
+  currentIndex = index;
+  updatemodalImageImage();
+}
+
+function closemodalImage() {
+  modalImage.style.display = "none";
+}
+
+// for arrow button of Keyboard
+
+document.addEventListener("keydown", function (event) {
+  if (event.key === "ArrowLeft") {
+    changeImage(-1);
+  } else if (event.key === "ArrowRight") {
+    changeImage(1);
+  }
+});
+
+function changeImage(step) {
+  currentIndex = (currentIndex + step + images.length) % images.length;
+  updatemodalImageImage();
+}
+
+function updatemodalImageImage() {
+  modalImageImg.src = images[currentIndex];
+
+  imageCount.textContent = `${currentIndex + 1} / ${images.length}`;
+}
+
+window.onclick = function (event) {
+  if (event.target == modalImage) {
+    closemodalImage();
+  }
+};
+
+// mobile image change by arrow button
+
+const mobileMainImage = document.getElementById("mobile-main-image-id");
+
+function changeMobileImage() {
+  currentIndex = (currentIndex - 1 + images.length) % images.length;
+  mobileMainImage.src = images[currentIndex];
+  console.log(currentIndex);
+}
