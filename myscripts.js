@@ -148,6 +148,7 @@ function renderCalendar(calendarId, month, year) {
     "October",
     "November",
     "December",
+    "January",
   ];
 
   const monthHeader = document.createElement("div");
