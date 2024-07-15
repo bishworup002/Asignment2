@@ -660,9 +660,7 @@ h1 {
   background-color: rgba(0,0,0,0.9);
   
 }
-#modalImageImage{
-  /* object-fit: cover; */
-}
+
 .modalImage-content {
   position: relative;
   margin: auto;
